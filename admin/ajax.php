@@ -1,0 +1,64 @@
+<?php
+define("BASEPATH", dirname(__FILE__));
+session_start();
+
+if(!isset($_SESSION['id_admin'])) {
+   header('location:./');
+   exit;
+}
+
+include('../include/connection.php');
+
+// Pengaman koneksi database
+if (!isset($con) && isset($conn)) { $con = $conn; }
+if (!isset($con) && isset($koneksi)) { $con = $koneksi; }
+
+// Jika periode dipilih di dropdown, filter berdasarkan periode. 
+// Jika kosong/tidak dipilih, otomatis tampilkan semua data.
+if (isset($_POST['periode']) && $_POST['periode'] != '') {
+   $periode = $_POST['periode'];
+   $get = $con->prepare("SELECT id_kandidat, nama_calon, foto, visi, misi, suara, periode, program, no_k FROM t_kandidat WHERE periode = ?");
+   $get->bind_param('s', $periode);
+} else {
+   $get = $con->prepare("SELECT id_kandidat, nama_calon, foto, visi, misi, suara, periode, program, no_k FROM t_kandidat");
+}
+
+$get->execute();
+$get->store_result();
+$htg = $get->num_rows();
+
+if($htg > 0) {
+   ?>
+   <div class="row mt-4">
+      <?php
+      for ($i = 0; $i < $htg; $i++) {
+         $get->bind_result($id, $nama, $foto, $visi, $misi, $suara, $per, $program, $no_k);
+         $get->fetch();
+      ?>
+      <div class="col-md-4 mb-4">
+         <div class="card shadow-sm text-center p-3">
+               <img class="kandidat img-fluid rounded mb-3" src="../assets/img/kandidat/<?php echo $foto; ?>" alt="<?php echo $nama; ?>" style="height: 250px; object-fit: cover;">
+               <div class="suara mb-2">
+                  <span class="badge badge-success" style="font-size: 14px; padding: 8px 12px;"><?php echo $suara; ?> Suara</span>
+               </div>
+               <div class="caption">
+                     <h5 class="font-weight-bold mb-3"><?php echo $nama; ?></h5>
+                     <a href="?page=kandidat&action=edit&id=<?php echo $id; ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a>
+                     <a href="?page=kandidat&action=view&id=<?php echo $id; ?>" class="btn btn-primary btn-sm"><i class="fas fa-eye"></i> View</a>
+                     <a href="?page=kandidat&action=hapus&id=<?php echo $id; ?>" class="btn btn-danger btn-sm" onclick="return confirm('Yakin ingin menghapus kandidat ini ?')"><i class="fas fa-trash"></i> Hapus</a>
+               </div>
+         </div>
+      </div>
+      <?php
+      }
+      ?>
+   </div>
+   <?php
+} else {
+   echo '<div class="col-md-12 mt-5">
+            <div class="alert alert-warning text-center" style="padding: 30px;">
+               <h5 class="mb-0">Tidak ada kandidat</h5>
+            </div>
+         </div>';
+}
+?>
