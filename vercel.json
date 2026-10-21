@@ -4,14 +4,8 @@
       "src": "*.php",
       "use": "vercel-php@0.7.1",
       "config": {
-        "includeFiles": ["include/**"]
+        "includeFiles": ["**/**"]
       }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/$1"
     }
   ]
 }
